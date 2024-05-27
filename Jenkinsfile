@@ -71,15 +71,21 @@ pipeline {
                 }
             }
         }
-        stage('Push Image To Dockerhub') {
+        stage("Build & Push Docker Image") {
             steps {
-                script{
-                    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-                    sh 'docker login -u sundarp1985 --password ${dockerhub}' }
-                    sh 'docker push sundarp1985/register-app-pipeline:latest'
+                script {
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
+
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                        docker_image.push('latest')
+                    }
                 }
             }
-        }    
+
+       }
        stage("Trivy Scan") {
            steps {
                script {
