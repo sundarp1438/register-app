@@ -57,6 +57,11 @@ pipeline {
             }
 
         }
+	stage('TRIVY FS SCAN') {
+            steps {
+                sh "trivy fs . > trivyfs.txt"
+            }
+        }
 	  stage('Build Docker Image') {
             steps {
                 script{
@@ -86,13 +91,11 @@ pipeline {
             }
 
        }
-       stage("Trivy Scan") {
-           steps {
-               script {
-	            sh ('trivy image sundarp1985/register-app-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
-               }
-           }
-       }
+       stage("TRIVY Image Scan"){
+            steps{
+                sh "trivy image avian19/netflix:latest > trivyimage.txt" 
+            }
+        }
 
        stage ('Cleanup Artifacts') {
            steps {
