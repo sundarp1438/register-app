@@ -49,7 +49,7 @@ pipeline {
            }
        }
 
-       stage("Quality Gate"){
+       stage("Quality Gate") {
            steps {
                script {
                     waitForQualityGate abortPipeline: false, credentialsId: 'jenkins-sonarqube-token'
@@ -57,23 +57,29 @@ pipeline {
             }
 
         }
-
-        stage("Build & Push Docker Image") {
+	  stage('Build Docker Image') {
             steps {
-                script {
-                    docker.withRegistry('',DOCKER_PASS) {
-                        docker_image = docker.build "${IMAGE_NAME}"
-                    }
-
-                    docker.withRegistry('',DOCKER_PASS) {
-                        docker_image.push("${IMAGE_TAG}")
-                        docker_image.push('latest')
-                    }
+                script{
+                    sh 'docker build -t sundarp1985/register-app-pipeline:latest .'
                 }
             }
-
-       }
-
+         }
+	stage('Containerize And Test') {
+            steps {
+                script{
+                    sh 'docker run -d --name register-app sundarp1985/register-app-pipeline:latest && sleep 10 && docker stop register-app'
+                }
+            }
+        }
+        stage('Push Image To Dockerhub') {
+            steps {
+                script{
+                    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
+                    sh 'docker login -u sundarp1985 --password ${dockerhub}' }
+                    sh 'docker push sundarp1985/register-app-pipeline:latest'
+                }
+            }
+        }    
        stage("Trivy Scan") {
            steps {
                script {
