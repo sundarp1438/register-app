@@ -93,7 +93,7 @@ pipeline {
        }
        stage("TRIVY Image Scan"){
             steps{
-                sh "trivy image avian19/netflix:latest > trivyimage.txt" 
+                sh "trivy image sundarp1985/register-app-pipeline:latest > trivyimage.txt" 
             }
         }
 
